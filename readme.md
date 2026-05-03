@@ -11,10 +11,9 @@ GBFVS is a 2D fighting game. Additional details about the gameplay can be found 
 - At each timestep, the agent captures the current game screen and applies OCR and image processing techniques to extract relevant features as observations.
 - Based on these observations, the agent selects an action for a character it control according to its policy.
 - The environment then transitions to a new state, and a reward is computed.  
+- This loop continues until the episode terminates.
 
 ## **3. RL interaction components**
-- This loop continues until the episode terminates.## **3. The agent–environment interaction elements**
-
 ### **3.1 Environment**
 The game screen during a match in Granblue Fantasy Versus: Rising.
 ### **3.2 Observation (17 features)**
