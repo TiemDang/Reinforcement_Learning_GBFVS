@@ -1,0 +1,10 @@
+gymnasium
+stable-baselines3
+torch
+ultralytics
+mss
+Pillow
+numpy<2
+opencv-python
+pytesseract
+pyautogui
