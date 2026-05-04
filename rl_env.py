@@ -4,13 +4,14 @@ import gymnasium as gym
 from gymnasium import spaces
 import mss
 from PIL import Image
+import datetime
 from ultralytics import YOLO
 
 from module import GalleonActions, Observation, GameState, Reward
 
 REGIONS = {
-    'my_hp':       (275, 94, 1148, 125),
-    'opp_hp':      (1412, 94, 2285, 125),
+    'my_hp':       (275, 104, 1148, 115),
+    'opp_hp':      (1412, 104, 2285, 115),
     'my_gauge':    (671, 132, 780, 185),
     'opp_gauge':   (1785, 132, 1880, 185),
     'my_bp':       (980, 35, 1130, 85),
@@ -38,7 +39,7 @@ class GBFVSEnv(gym.Env):
         )
 
         self.sct = mss.mss()
-        self.game_state = GameState(conf_threshold=0.9)
+        self.game_state = GameState(conf_threshold=0.7)
         self.reward_fn = Reward()
 
         self.yolo_model = YOLO('/home/venus/venus/rl_gbfvs/model/YOLO/best.pt')
@@ -48,6 +49,9 @@ class GBFVSEnv(gym.Env):
         self.prev_opp_hp = 1.0
 
         self.episode_count = 0
+
+        self.p1_round_wins = 0
+        self.p2_round_wins = 0
 
     def _get_screenshot(self):
         raw = self.sct.grab(self.sct.monitors[1])
@@ -87,7 +91,7 @@ class GBFVSEnv(gym.Env):
                 print("Engage detected. Battle start in 1 !")
                 time.sleep(0.7) # delay before can control character
                 break
-            time.sleep(3/60) # 3 frame check for engage sign
+            time.sleep(10/60) # 10 frame check for engage sign
 
     
     def reset(self, seed=None, options=None):
@@ -101,21 +105,28 @@ class GBFVSEnv(gym.Env):
         self.prev_my_hp = obs_vec[0]
         self.prev_opp_hp = obs_vec[1]
         self.prev_obs_vec = obs_vec
+        self.p1_round_wins = 0
+        self.p1_round_wins = 0
 
         return obs_vec, {}
     
 
     def wait_action(self, duration):
-        interval = 3/60  # 3 frame
+        interval = 30/60  #  1/2 second
         elapsed = 0
         while elapsed < duration:
             time.sleep(interval)
             elapsed += interval
             img = self._get_screenshot()
-            self.game_state.update(img)
-            if self.game_state.detect_round_end() or self.game_state.detect_set_end():
-                return True  
-        return False
+            obs = Observation(img, self.yolo_model)
+            obs_vec = self._get_obs(obs)
+            round_winner = self.game_state.detect_round_end(obs_vec[0], obs_vec[1])
+
+
+            if round_winner:
+                return 'round', round_winner
+            
+        return None, None
     
 
     def check_action_valid(self, action, prev_obs_vec):
@@ -126,7 +137,7 @@ class GBFVSEnv(gym.Env):
         ultimate_skills = [27, 28, 29, 30, 31]
         universal_actions = [32, 33]
         skybound_art = [34, 35]
-        super_skybound_art = [37]
+        super_skybound_art = [36]
 
         if action in ultimate_skills and my_gauge < 0.5:
             return False
@@ -141,12 +152,13 @@ class GBFVSEnv(gym.Env):
 
     def step(self, action):
         if not self.check_action_valid(action, self.prev_obs_vec):
+            print(f"[{datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3]}] Invallid Action: {self.actions.ACTION_MAP[action].__name__} | Reward: -0.05")
             return self.prev_obs_vec, -0.05, False, False, {}
         
 
-        self.actions._reset_keys()
+        #self.actions._reset_keys()
         self.actions.ACTION_MAP[action]()
-        self.wait_action(self.action_duration[action])
+        event_type, winner = self.wait_action(self.action_duration[action])
 
         img = self._get_screenshot()
         obs = Observation(img, self.yolo_model)
@@ -160,30 +172,57 @@ class GBFVSEnv(gym.Env):
             self.prev_my_hp, curr_my_hp,
             self.prev_opp_hp, curr_opp_hp
         )
+        print(f"[{datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3]}] "
+                f"my_hp: {curr_my_hp:.3f} | opp_hp: {curr_opp_hp:.3f} | "
+                f"Action: {self.actions.ACTION_MAP[action].__name__} | Reward: {reward:.3f}")
 
         terminated = False
-        set_winner = self.game_state.detect_set_end()
-        
-        if set_winner:
-            self.episode_count += 1
-            print(f"Set end! {set_winner} win.")
-            reward += self.reward_fn.set_end_reward(set_winner)
+
+        if event_type == 'round':
+            round_winner = winner
+        else :
+            round_winner = self.game_state.detect_round_end(curr_my_hp, curr_opp_hp)
+
+        if round_winner :
+            if round_winner == 'p1':
+                self.p1_round_wins += 1
+            else:
+                self.p2_round_wins += 1
+            
+            reward += self.reward_fn.round_end_reward(round_winner)
             reward = float(reward)
-            print(f"Episode {self.episode_count} | Reward: {reward:.3f}\n{'_'*30}")
-            terminated = True
-            self.actions.rematch()
-        
-        else:
-            round_winner = self.game_state.detect_round_end()
-            if round_winner:
-                print(f"Round end! {round_winner} win.")
-                reward += self.reward_fn.round_end_reward(round_winner)
-                reward = float(reward)
+
+            if self.p1_round_wins == 2:
+                self.episode_count += 1
+                self.p1_round_wins = 0
+                self.p2_round_wins = 0
+                reward += float(self.reward_fn.set_end_reward('p1'))
+                print(f"Episode {self.episode_count} completed | p1 win | Reward: {reward:.3f}\n{'_'*20}")
+                terminated = True
+                self.actions.rematch()
+
+            elif self.p2_round_wins == 2 :
+                self.episode_count += 1
+                self.p1_round_wins = 0
+                self.p2_round_wins = 0
+                reward += float(self.reward_fn.set_end_reward('p2'))
+                print(f"Episode {self.episode_count} completed | p2 win | Reward: {reward:.3f}\n{'_'*20}")
+                terminated = True
+                self.actions.rematch()
+
+            else :
+                print(f"Round end | {round_winner} win | Reward: {reward:.3f}")
                 self._wait_for_engage()
-                self.prev_my_hp = 1.0
-                self.prev_opp_hp = 1.0
+                img = self._get_screenshot()
+                obs_new = Observation(img, self.yolo_model)
+                obs_vec = self._get_obs(obs_new)
+                self.prev_my_hp = obs_vec[0]
+                self.prev_opp_hp = obs_vec[1]
+                self.prev_obs_vec = obs_vec
                 return obs_vec, reward, terminated, False, {}
-        
+
+
+
         self.prev_my_hp = curr_my_hp
         self.prev_opp_hp = curr_opp_hp
         self.prev_obs_vec = obs_vec

@@ -65,12 +65,12 @@ Reinforcement_Learning_GBFVS/
 ├── module/
 │   ├── actions.py       # Action space (50 actions)
 │   ├── observation.py   # Game state reading (HP, gauge, BP, skills, distance...)
-│   ├── game_state.py    # Detect when round begin, round end, match end.
+│   ├── game_state.py    # Detect round begin and round end.
 │   ├── reward.py        # Reward function
 │   └── callback.py      # Training logger
 ├── model/
 │   └── YOLO/best.pt     # YOLO model for character detection
-├── templates/           # Template images for game state detection
+├── templates/           # Template images for engage detection
 ├── visualize/           # Saving the reward for each episode for visualization
 ├── requirements.txt  
 ├── rl_env.py            # Gymnasium environment

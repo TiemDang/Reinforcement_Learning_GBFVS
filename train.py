@@ -36,7 +36,7 @@ else:
         ent_coef=0.02,
         vf_coef=0.5,
         max_grad_norm=0.5,
-        device='cuda'
+        device='cpu'
     )
     print("Starting new training...")
 

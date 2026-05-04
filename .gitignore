@@ -2,5 +2,6 @@ __pycache__/
 dataset/
 test_file/
 obser_crop/
+crop/
 *.mp4
 get_action_duration.py

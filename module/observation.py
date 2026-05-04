@@ -17,15 +17,15 @@ class Observation :
 
         # Mask for hp color
         mask_green = (
-            (img_arr[:, :, 0] > 175) & (img_arr[:, :, 0] < 190) &
-            (img_arr[:, :, 1] > 238) & (img_arr[:, :, 1] < 246) &
-            (img_arr[:, :, 2] > 160) & (img_arr[:, :, 2] < 175)
+            (img_arr[:, :, 0] > 170) & (img_arr[:, :, 0] < 202) &
+            (img_arr[:, :, 1] > 225) & (img_arr[:, :, 1] < 240) &
+            (img_arr[:, :, 2] > 158) & (img_arr[:, :, 2] < 195)
         )
 
         mask_cyan = (
-            (img_arr[:, :, 0] > 175) & (img_arr[:, :, 0] < 200) &
-            (img_arr[:, :, 1] > 220) & (img_arr[:, :, 1] < 250) &
-            (img_arr[:, :, 2] > 233) & (img_arr[:, :, 2] < 248)
+            (img_arr[:, :, 0] > 172) & (img_arr[:, :, 0] < 185) &
+            (img_arr[:, :, 1] > 224) & (img_arr[:, :, 1] < 232) &
+            (img_arr[:, :, 2] > 238) & (img_arr[:, :, 2] < 248)
         )
 
         green_cols = np.any(mask_green, axis=0)
@@ -71,8 +71,7 @@ class Observation :
         gauge = Image.fromarray(img_arr)
 
         # Read gauge value > convert to float
-        gauge_percent = pytesseract.image_to_string(gauge, config='--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789%')
-        gauge_percent = gauge_percent.strip().replace('%', '')
+        gauge_percent = pytesseract.image_to_string(gauge, config='--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789')
         try :
             gauge_percent = float(gauge_percent)
         except ValueError:
