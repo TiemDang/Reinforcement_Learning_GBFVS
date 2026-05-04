@@ -52,6 +52,7 @@ class GBFVSEnv(gym.Env):
 
         self.p1_round_wins = 0
         self.p2_round_wins = 0
+        self.counter = 0
 
     def _get_screenshot(self):
         raw = self.sct.grab(self.sct.monitors[1])
@@ -106,9 +107,16 @@ class GBFVSEnv(gym.Env):
         self.prev_opp_hp = obs_vec[1]
         self.prev_obs_vec = obs_vec
         self.p1_round_wins = 0
-        self.p1_round_wins = 0
+        self.p2_round_wins = 0
 
         return obs_vec, {}
+    
+
+    def read_hp_only(self, img):
+        obs = Observation(img, self.yolo_model)
+        my_hp = obs.read_hp(REGIONS['my_hp'])
+        opp_hp = obs.read_hp(REGIONS['opp_hp'])
+        return my_hp, opp_hp
     
 
     def wait_action(self, duration):
@@ -118,14 +126,13 @@ class GBFVSEnv(gym.Env):
             time.sleep(interval)
             elapsed += interval
             img = self._get_screenshot()
-            obs = Observation(img, self.yolo_model)
-            obs_vec = self._get_obs(obs)
-            round_winner = self.game_state.detect_round_end(obs_vec[0], obs_vec[1])
-
-
-            if round_winner:
-                return 'round', round_winner
-            
+            my_hp, opp_hp = self.read_hp_only(img)
+            if my_hp == 0 or opp_hp == 0 :
+                self.counter += 1
+            if self.counter == 2:
+                return 'round', self.game_state.detect_round_end(my_hp, opp_hp)
+        
+        self.counter = 0
         return None, None
     
 
@@ -177,11 +184,22 @@ class GBFVSEnv(gym.Env):
                 f"Action: {self.actions.ACTION_MAP[action].__name__} | Reward: {reward:.3f}")
 
         terminated = False
+        round_winner = None
 
         if event_type == 'round':
             round_winner = winner
         else :
-            round_winner = self.game_state.detect_round_end(curr_my_hp, curr_opp_hp)
+            self.counter = 0
+
+            for i in range(2):
+                img = self._get_screenshot()
+                my_hp, opp_hp = self.read_hp_only(img)
+                if my_hp == 0 or opp_hp == 0:
+                    self.counter += 1
+                time.sleep(0.1)
+            if self.counter == 2:
+                round_winner = self.game_state.detect_round_end(my_hp, opp_hp)
+            self.counter = 0
 
         if round_winner :
             if round_winner == 'p1':

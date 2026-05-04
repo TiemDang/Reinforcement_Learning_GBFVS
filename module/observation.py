@@ -23,9 +23,9 @@ class Observation :
         )
 
         mask_cyan = (
-            (img_arr[:, :, 0] > 172) & (img_arr[:, :, 0] < 185) &
-            (img_arr[:, :, 1] > 224) & (img_arr[:, :, 1] < 232) &
-            (img_arr[:, :, 2] > 238) & (img_arr[:, :, 2] < 248)
+            (img_arr[:, :, 0] > 170) & (img_arr[:, :, 0] < 200) &
+            (img_arr[:, :, 1] > 215) & (img_arr[:, :, 1] < 245) &
+            (img_arr[:, :, 2] > 230) & (img_arr[:, :, 2] < 245)
         )
 
         green_cols = np.any(mask_green, axis=0)
