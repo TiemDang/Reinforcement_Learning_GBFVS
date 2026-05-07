@@ -491,7 +491,7 @@ class GalleonActions:
 
     # Rematch when set end. 1 set = 3 game, win 2/3 = win 1 set
     def rematch(self): # Enter 2 time for rematch
-        time.sleep(15)
+        time.sleep(30)
         for i in range(2):
             pyautogui.keyDown('enter') # Display menu
             time.sleep(0.3)

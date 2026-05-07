@@ -38,7 +38,6 @@ class GBFVSEnv(gym.Env):
             dtype=np.float32
         )
 
-        self.sct = mss.mss()
         self.game_state = GameState(conf_threshold=0.7)
         self.reward_fn = Reward()
 
@@ -54,9 +53,6 @@ class GBFVSEnv(gym.Env):
         self.p2_round_wins = 0
         self.counter = 0
 
-    def _get_screenshot(self):
-        raw = self.sct.grab(self.sct.monitors[1])
-        return Image.frombytes('RGB', raw.size, raw.rgb)
 
     def _get_obs(self, obs):
         distance, high_block, low_block = obs.enemy_state()
@@ -82,24 +78,13 @@ class GBFVSEnv(gym.Env):
             float(high_block),
             float(low_block),
         ], dtype=np.float32)
-    
-
-    def _wait_for_engage(self):
-        while True:
-            img = self._get_screenshot()
-            self.game_state.update(img)
-            if self.game_state.detect_engage():
-                print("Engage detected. Battle start in 1 !")
-                time.sleep(0.7) # delay before can control character
-                break
-            time.sleep(10/60) # 10 frame check for engage sign
 
     
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
-        self._wait_for_engage()
+        self.game_state._wait_for_engage()
 
-        img = self._get_screenshot()
+        img = self.game_state._get_screenshot()
         obs = Observation(img, self.yolo_model)
         obs_vec = self._get_obs(obs)
 
@@ -119,55 +104,56 @@ class GBFVSEnv(gym.Env):
         return my_hp, opp_hp
     
 
-    def wait_action(self, duration):
-        interval = 30/60  #  1/2 second
-        elapsed = 0
-        while elapsed < duration:
-            time.sleep(interval)
-            elapsed += interval
-            img = self._get_screenshot()
-            my_hp, opp_hp = self.read_hp_only(img)
-            if my_hp == 0 or opp_hp == 0 :
-                self.counter += 1
-            if self.counter == 2:
-                return 'round', self.game_state.detect_round_end(my_hp, opp_hp)
+    def wait_action(self, duration, action):
+        skill_exception = [21, 22, 23, 24, 25, 26, 31, 37, 38, 39, 40, 41, 42, 43, 46, 47, 48]
+        # Duration
+        if 0.25*duration < 0.3:
+            wait_time = 0.2
+        else :
+            wait_time = 0.25*duration
+         
+        time.sleep(wait_time)
+        img = self.game_state._get_screenshot()
+        _, opp_hp_after = self.read_hp_only(img)
         
-        self.counter = 0
-        return None, None
-    
-
-    def check_action_valid(self, action, prev_obs_vec):
-        my_hp = prev_obs_vec[0]
-        my_gauge = prev_obs_vec[2]
-        my_bp = prev_obs_vec[4]
-
-        ultimate_skills = [27, 28, 29, 30, 31]
-        universal_actions = [32, 33]
-        skybound_art = [34, 35]
-        super_skybound_art = [36]
-
-        if action in ultimate_skills and my_gauge < 0.5:
-            return False
-        if action in universal_actions and my_bp < 1/3:
-            return False
-        if action in skybound_art and my_gauge < 1 :
-            return False
-        if action in super_skybound_art and ( my_gauge < 1 or my_hp > 0.3 ) :
-            return False
+        # Hit reward & penalty 
+        if not self.game_state.check_attack_hit(self.prev_opp_hp, opp_hp_after):
+            miss_penalty = -0.005 if action not in skill_exception else 0.0
+            print(f"[{datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3]}] Miss: {self.actions.ACTION_MAP[action].__name__} | Penalty: {miss_penalty}")
+            return miss_penalty
         
-        return True
+        else :
+            hit_reward = 0.005 if action not in skill_exception else 0.0
+            print(f"[{datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3]}] HIT: {self.actions.ACTION_MAP[action].__name__} | Reward: {hit_reward}")
+            time.sleep(duration-wait_time)
+            return hit_reward
+   
+        #     interval = 0.3
+        #     elapsed = wait_time
+        #     while elapsed < duration:
+        #         time.sleep(interval)
+        #         elapsed += interval
+        #         img = self.game_state._get_screenshot()
+        #         my_hp, opp_hp = self.read_hp_only(img)
+        #         if my_hp <= 0.01 or opp_hp <= 0.01:
+        #             self.counter += 1
+        #         if self.counter == 2:
+        #             self.counter = 0
+        #             return 'round', self.game_state.check_round_end(my_hp, opp_hp), hit_reward
+        
+        # self.counter = 0
+        # return None, None, hit_reward
+
 
     def step(self, action):
-        if not self.check_action_valid(action, self.prev_obs_vec):
+        if not self.game_state.check_action_valid(action, self.prev_obs_vec):
             print(f"[{datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3]}] Invallid Action: {self.actions.ACTION_MAP[action].__name__} | Reward: -0.05")
             return self.prev_obs_vec, -0.05, False, False, {}
         
-
-        #self.actions._reset_keys()
         self.actions.ACTION_MAP[action]()
-        event_type, winner = self.wait_action(self.action_duration[action])
+        bouns = self.wait_action(self.action_duration[action], action)
 
-        img = self._get_screenshot()
+        img = self.game_state._get_screenshot()
         obs = Observation(img, self.yolo_model)
         self.game_state.update(img)
         obs_vec = self._get_obs(obs)
@@ -177,7 +163,8 @@ class GBFVSEnv(gym.Env):
 
         reward = self.reward_fn.step_reward(
             self.prev_my_hp, curr_my_hp,
-            self.prev_opp_hp, curr_opp_hp
+            self.prev_opp_hp, curr_opp_hp,
+            bouns
         )
         print(f"[{datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3]}] "
                 f"my_hp: {curr_my_hp:.3f} | opp_hp: {curr_opp_hp:.3f} | "
@@ -186,20 +173,15 @@ class GBFVSEnv(gym.Env):
         terminated = False
         round_winner = None
 
-        if event_type == 'round':
-            round_winner = winner
-        else :
-            self.counter = 0
-
-            for i in range(2):
-                img = self._get_screenshot()
-                my_hp, opp_hp = self.read_hp_only(img)
-                if my_hp == 0 or opp_hp == 0:
-                    self.counter += 1
-                time.sleep(0.1)
-            if self.counter == 2:
-                round_winner = self.game_state.detect_round_end(my_hp, opp_hp)
-            self.counter = 0
+        for i in range(2):
+            img = self.game_state._get_screenshot()
+            my_hp, opp_hp = self.read_hp_only(img)
+            if my_hp == 0 or opp_hp == 0:
+                self.counter += 1
+            time.sleep(0.15)
+        if self.counter == 2:
+            round_winner = self.game_state.check_round_end(my_hp, opp_hp)
+        self.counter = 0
 
         if round_winner :
             if round_winner == 'p1':
@@ -230,8 +212,8 @@ class GBFVSEnv(gym.Env):
 
             else :
                 print(f"Round end | {round_winner} win | Reward: {reward:.3f}")
-                self._wait_for_engage()
-                img = self._get_screenshot()
+                self.game_state._wait_for_engage()
+                img = self.game_state._get_screenshot()
                 obs_new = Observation(img, self.yolo_model)
                 obs_vec = self._get_obs(obs_new)
                 self.prev_my_hp = obs_vec[0]
@@ -247,4 +229,4 @@ class GBFVSEnv(gym.Env):
         return obs_vec, reward, terminated, False, {}
 
     def close(self):
-        self.sct.close()
+        self.game_state.close()
