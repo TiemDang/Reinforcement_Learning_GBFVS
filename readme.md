@@ -14,9 +14,13 @@ GBFVS is a 2D fighting game. Additional details about the gameplay can be found 
 - This loop continues until the episode terminates.
 
 ## **3. RL interaction components**
-### **3.1 Environment**
+### **3.1 Agent**
+PPO agent that learns to control the game character.
+
+### **3.2 Environment**
 The game screen during a match in Granblue Fantasy Versus: Rising.
-### **3.2 Observation (17 features)**
+
+### **3.3 Observation (17 features)**
 OCR and computer vision are used to extract relevant information directly from captured game screens, forming an observation vector. Raw images are not used as direct input to the agent.
 
 - **HP** : pixel color masking on fixed screen regions
@@ -41,10 +45,10 @@ OCR and computer vision are used to extract relevant information directly from c
 | 11~14 | opp_skill_1~4 | Whether each opponent skill is on cooldown | 0 or 1 |
 | 15 | high_block | Whether the opponent is using a high block | 0 or 1 |
 | 16 | low_block | Whether the opponent is using a low block | 0 or 1 |
-### **3.3 Actions**
+
+### **3.4 Actions**
 A discrete action space of 50 actions, including normal attacks, special attacks, movement, and defensive options.
-### **3.4 Ternimation condition**
-The episode terminates when a match is completed. A match consists of up to 3 rounds; the first player to win 2 rounds wins the match.
+
 ### **3.5 Rewards & Penalty**
 | Event                                       | Reward / Penalty  |
 |---------------------------------------------|-------------|
@@ -59,6 +63,9 @@ The episode terminates when a match is completed. A match consists of up to 3 ro
 | Skill hits the opponent | +0.005       |
 
 The purpose of the reward & penalty is to encourage the agent to win matches while taking as few hits as possible and avoiding unnecessary skill usage.
+
+### **3.6 Ternimation condition**
+The episode terminates when a match is completed. A match consists of up to 3 rounds; the first player to win 2 rounds wins the match.
 
 
 ## **4. Project Structure**
@@ -111,15 +118,38 @@ python train.py  # Train a new model
 python train.py --resume  # Resume training from a saved model
 ```
 - Launch the game and navigate to Versus mode. Select Galleon (Player 1) and Narmaya (Player 2), choose the Celestial View stage, and wait for the match to begin. The agent controls Player 1, while Player 2 is controlled by the AI of the game.
+
+### **6.4 Testting**
+- Run the following commands:
+```
+python test.py  # Test a model
+```
+- Launch the game and navigate to Versus mode. Select Galleon (Player 1) and Narmaya (Player 2), choose the Celestial View stage, and wait for the match to begin. The agent controls Player 1, while Player 2 is controlled by the AI of the game.  
+- The `test.py` file uses the latest model for testing by default. If you want to test another model, such as the best model or a specific checkpoint, open `test.py` and change the following line to the path of your desired model:
+
+```
+model_path = base_dir / 'model' / 'Gymnasium' / 'checkpoints' / 'ppo_gbfvs_6144_steps'
+```
 ## **7. Results**
 ### **7.1 Visualize Rewards**
 **Summary**
-- Rewards after 120+ episodes.
 - Red dots are lost matches, while blue are indicate won matches. As you can see, the agent has not achieved any wins yet.
 - The game AI has 6 difficulty levels. From easy to hard : [Beginner - Normal - Hard - Very Hard - Extreme - Nightmare].
 - All training was performed against the Hard-level AI opponent.
 
 ![Results graph](/reward_plot.png)
 ### **7.2 Video**
-The PPO model is updated every 512 training steps. I will upload a testing video after the model reaches more than 5000 training steps.  
-Current progress:  2560 / 5000 + steps.
+Testing model at 6144 steps :
+[Video Youtube](https://youtu.be/JRfdYMLOl_c)
+~~Progress:  6144 / 5000 + steps.~~ (Completed)
+New progress : 6144 / 15000 + steps
+
+## **8. Limitations**
+1. Screen limitations:
+- The crop coordinates are fixed for a 27-inch screen with a resolution of 2560x1440. Using a different screen size, resolution, or running the game not in fullscreen mode may result in incorrect crop coordinates, leading to incorrect observation vector values.
+- Display colors may vary between different monitors. As a result, screenshot colors can differ, causing the color mask to extract incorrect pixels and produce inaccurate observation vector values.
+
+2. Agent 
+- The agent struggles to react to continuous attacks.
+- Action timing is still inconsistent, and there is a small delay between actions.
+- The agent has difficulty performing combos. Most of the time, it only uses a single skill instead of chaining multiple actions, although it occasionally executes a combos.

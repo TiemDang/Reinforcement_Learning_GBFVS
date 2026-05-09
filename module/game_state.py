@@ -58,7 +58,7 @@ class GameState:
         return True
     
     def check_attack_hit(self, opp_hp_before, opp_hp_after):
-        return (opp_hp_before - opp_hp_after) > 0
+        return (opp_hp_before - opp_hp_after) > 0.015
     
     def _wait_for_engage(self):
         while True:
