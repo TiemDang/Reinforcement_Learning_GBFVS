@@ -65,53 +65,53 @@ class GalleonActions:
 
 
         self.ACTION_DURATION = [
-            0.44, # normal_attack_z
-            1.37, # chain_attack_z
-            0.87, # low_attack_z
-            1.07, # low_attack_z_2hit
-            0.6, # normal_attack_x
-            1.4, # chain_normal_attack_x
-            0.87, # low_attack_x
-            0.8, # normal_attack_c
-            1.54, # chain_normal_attack_c
-            1.2, # low_attack_c
-            0.74, # will_of_the_earth_light
-            1.04, # will_of_the_earth_med
-            0.97, # will_of_the_earth_heavy
-            0.7, # bedrock_blast
-            0.7, # bedrock_blast_z
-            1.1, # bedrock_blast_x
-            1.4, # bedrock_blast_c
-            2.7, # primordial_grasp
-            2.74, # primordial_grasp_enhanced
-            3.2, # muddy_embrace
-            3.67, # muddy_embrace_enhanced error !
-            0.47, # meteorite
-            0.5, # meteorite_enhanced
-            0.77, # meteorite_hold
-            0.8, # meteorite_hold_enhanced
-            1.0, # seism
-            1.3, # seism_charge
-            1.24, # will_of_the_earth_gauge
-            3.6, # bedrock_blast_gauge
-            2.77, # primordial_grasp_gauge
-            3.9, # muddy_embrace_gauge
-            1.1, # meteorite_gauge
-            1.5, # raging_strike
-            2.34, # raging_strike_chain
-            7.74, # terrestrial_pulse_t
-            3.7, # terrestrial_pulse_p
-            10.87, # swat
+            0.47, # normal_attack_z
+            1.4, # chain_attack_z
+            0.9, # low_attack_z
+            1.1, # low_attack_z_2hit
+            0.63, # normal_attack_x
+            1.43, # chain_normal_attack_x
+            0.9, # low_attack_x
+            0.83, # normal_attack_c
+            1.57, # chain_normal_attack_c
+            1.23, # low_attack_c
+            0.77, # will_of_the_earth_light
+            1.07, # will_of_the_earth_med
+            1.0, # will_of_the_earth_heavy
+            0.73, # bedrock_blast
+            0.73, # bedrock_blast_z
+            1.13, # bedrock_blast_x
+            1.43, # bedrock_blast_c
+            2.73, # primordial_grasp
+            2.77, # primordial_grasp_enhanced
+            3.23, # muddy_embrace
+            3.7, # muddy_embrace_enhanced error !
+            0.5, # meteorite
+            0.53, # meteorite_enhanced
+            0.8, # meteorite_hold
+            0.83, # meteorite_hold_enhanced
+            1.03, # seism
+            1.33, # seism_charge
+            1.27, # will_of_the_earth_gauge
+            3.63, # bedrock_blast_gauge
+            2.8, # primordial_grasp_gauge
+            3.93, # muddy_embrace_gauge
+            1.13, # meteorite_gauge
+            1.53, # raging_strike
+            2.37, # raging_strike_chain
+            7.77, # terrestrial_pulse_t
+            3.73, # terrestrial_pulse_p
+            10.9, # swat
             0.3, # walk_forward
             0.3, # walk_backward
             0.64, # dash_forward
-            0.67, # dash_backward
-            0.5, # run_forward
+            0.7, # dash_backward
+            0.50, # run_forward
             1.0, # high_block
             1.0, # low_block
             1.8, # throw
             1.9, # throw_backward
-            1.37, # dodge
+            1.34, # dodge
             1.17, # jump_forward
             1.07 # jump_backward
         ]

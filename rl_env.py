@@ -119,7 +119,7 @@ class GBFVSEnv(gym.Env):
         
         else :
             hit_reward = 0.005 if action not in skill_exception else 0.0
-            time.sleep(duration - wait_time) # 0.13 is time get screenshot
+            time.sleep(duration - wait_time) 
             return hit_reward
 
 
@@ -129,12 +129,11 @@ class GBFVSEnv(gym.Env):
             return self.prev_obs_vec, -0.05, False, False, {}
         
         self.actions.ACTION_MAP[action]()
-        if self.action_duration[action] > 0.85 :
-            action_duration = self.action_duration[action] - 0.85
+        if self.action_duration[action] > 0.8 :
+            action_duration = self.action_duration[action] - 0.8
         else :
             action_duration = 0
         bouns = self.wait_action(action_duration, action)
-
         img = self.game_state._get_screenshot()
         obs = Observation(img, self.yolo_model)
         self.game_state.update(img)
@@ -160,7 +159,7 @@ class GBFVSEnv(gym.Env):
             my_hp, opp_hp = self.read_hp_only(img)
             if my_hp == 0 or opp_hp == 0:
                 self.counter += 1
-            time.sleep(0.3) 
+            time.sleep(0.22) 
         if self.counter == 2:
             round_winner = self.game_state.check_round_end(my_hp, opp_hp)
         self.counter = 0

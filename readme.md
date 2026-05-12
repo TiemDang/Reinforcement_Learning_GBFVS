@@ -139,9 +139,8 @@ model_path = base_dir / 'model' / 'Gymnasium' / 'checkpoints' / 'ppo_gbfvs_6144_
 
 ![Results graph](/reward_plot.png)
 ### **7.2 Video**
-Testing model at 6144 steps :
-[Video Youtube](https://youtu.be/JRfdYMLOl_c)
-~~Progress:  6144 / 5000 + steps.~~ (Completed)
+Testing model at 6144 steps : [Video Youtube](https://youtu.be/JRfdYMLOl_c)  
+~~Progress:  6144 / 5000 + steps.~~ (Completed)  
 New progress : 6144 / 15000 + steps
 
 ## **8. Limitations**
@@ -153,3 +152,7 @@ New progress : 6144 / 15000 + steps
 - The agent struggles to react to continuous attacks.
 - Action timing is still inconsistent, and there is a small delay between actions.
 - The agent has difficulty performing combos. Most of the time, it only uses a single skill instead of chaining multiple actions, although it occasionally executes a combos.
+
+3. Training speed
+- Training speed is limited because the training process runs on a single environment instead of multiple parallel environments.  
+- Updating every 512 steps takes approximately 30-45 min.
