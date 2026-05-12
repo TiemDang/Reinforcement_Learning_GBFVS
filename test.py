@@ -8,7 +8,7 @@ from pathlib import Path
 
 base_dir = Path(__file__).parent
 #model_path = base_dir / 'model' / 'Gymnasium' / 'ppo_gbfvs_best'
-model_path = base_dir / 'model' / 'Gymnasium' / 'checkpoints' / 'ppo_gbfvs_6144_steps'
+model_path = base_dir / 'model' / 'Gymnasium' / 'checkpoints' / 'ppo_gbfvs_15872_steps'
 
 env = GBFVSEnv()
 model = PPO.load(model_path, env=env, device='cpu')

@@ -90,6 +90,7 @@ Reinforcement_Learning_GBFVS/
 ├── visualize/           # Saving the reward for each episode for visualization
 ├── requirements.txt  
 ├── rl_env.py            # Gymnasium environment
+├── test.py              # Test the model 
 └── train.py             # Training script
 
 ```
@@ -139,9 +140,10 @@ model_path = base_dir / 'model' / 'Gymnasium' / 'checkpoints' / 'ppo_gbfvs_6144_
 
 ![Results graph](/reward_plot.png)
 ### **7.2 Video**
-Testing model at 6144 steps : [Video Youtube](https://youtu.be/JRfdYMLOl_c)  
-~~Progress:  6144 / 5000 + steps.~~ (Completed)  
-New progress : 6144 / 15000 + steps
+Progress :    
+~~6.144 / 5.000 + steps~~ (Completed)  | Test the model after 6.144 steps : [https://youtu.be/JRfdYMLOl_c ](https://youtu.be/JRfdYMLOl_c)  
+~~15.782 / 15.000 + steps~~ (Completed) | Test the model after 15.782 steps : [https://youtu.be/2kxj7k9eNRs](https://youtu.be/2kxj7k9eNRs)  
+15.782 / 30.000 (In progress) 
 
 ## **8. Limitations**
 1. Screen limitations:
@@ -155,4 +157,4 @@ New progress : 6144 / 15000 + steps
 
 3. Training speed
 - Training speed is limited because the training process runs on a single environment instead of multiple parallel environments.  
-- Updating every 512 steps takes approximately 30-45 min.
+- Updating every 512 steps takes ~~approximately 30-45 min (around 20 episodes)~~ around 8 episodes.

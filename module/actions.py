@@ -104,16 +104,16 @@ class GalleonActions:
             10.9, # swat
             0.3, # walk_forward
             0.3, # walk_backward
-            0.64, # dash_forward
-            0.7, # dash_backward
+            0.32, # dash_forward
+            0.45, # dash_backward
             0.50, # run_forward
             1.0, # high_block
             1.0, # low_block
             1.8, # throw
             1.9, # throw_backward
-            1.34, # dodge
-            1.17, # jump_forward
-            1.07 # jump_backward
+            0.67, # dodge
+            0.5, # jump_forward
+            0.5 # jump_backward
         ]
     
     def _reset_keys(self):
