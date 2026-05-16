@@ -60,12 +60,12 @@ A discrete action space of 50 actions, including normal attacks, special attacks
 | Losing a match                                  | -3          |
 | Using a skill without meeting requirements | -0.05       |
 | Skill misses the opponenet | -0.005       |
-| Skill hits the opponent | +0.005       |
+| Skill hits the opponent | +0.01       |
 
 The purpose of the reward & penalty is to encourage the agent to win matches while taking as few hits as possible and avoiding unnecessary skill usage.
 
 ### **3.6 Ternimation condition**
-The episode terminates when a match is completed. A match consists of up to 3 rounds; the first player to win 2 rounds wins the match.
+The episode terminates when a match is completed. A match consists of up to 3 rounds; the first player to win ~~2~~ 3 rounds wins the match.
 
 
 ## **4. Project Structure**
@@ -134,16 +134,21 @@ model_path = base_dir / 'model' / 'Gymnasium' / 'checkpoints' / 'ppo_gbfvs_6144_
 ## **7. Results**
 ### **7.1 Visualize Rewards**
 **Summary**
-- Red dots are lost matches, while blue are indicate won matches. As you can see, the agent has not achieved any wins yet.
+- Red dots indicate lost matches, while blue dots indicate won matches. As you can see, the agent has not won any matches yet, although it has won a few individual rounds.
 - The game AI has 6 difficulty levels. From easy to hard : [Beginner - Normal - Hard - Very Hard - Extreme - Nightmare].
-- All training was performed against the Hard-level AI opponent.
+- All training was performed against the Hard-level AI opponent.  
+- From around episode 600, the reward started to show a downward trend. The reason is that I modified the terminate condition.  
+- Previously, the match ended after winning 2 rounds, but now the agent must win 3 rounds instead. This means the agent has to fight longer, which increases the chances of both losing and winning more rounds. As a result, the overall reward decreased compared to the earlier episodes.  
+- This change was made to reduce training time. Previously, with the 2-round condition, it took around 9–10 episodes to complete one update. Each episode required about 20–25 seconds for rematching and starting a new episode.  
+- With the new 3-round condition, only about 3 episodes are needed. As a result, each update now saves approximately 9×25−3×25=150 seconds compared to the 2-round condition.
+
 
 ![Results graph](/reward_plot.png)
 ### **7.2 Video**
 Progress :    
 ~~6.144 / 5.000 + steps~~ (Completed)  | Test the model after 6.144 steps : [https://youtu.be/JRfdYMLOl_c ](https://youtu.be/JRfdYMLOl_c)  
 ~~15.782 / 15.000 + steps~~ (Completed) | Test the model after 15.782 steps : [https://youtu.be/2kxj7k9eNRs](https://youtu.be/2kxj7k9eNRs)  
-15.782 / 30.000 (In progress) 
+~~39.936 / 30.000 + steps~~ (Completed) |  Test the model after 39.936 steps : [https://youtu.be/FxgsdFfqdHM](https://youtu.be/FxgsdFfqdHM)
 
 ## **8. Limitations**
 1. Screen limitations:
@@ -157,4 +162,4 @@ Progress :
 
 3. Training speed
 - Training speed is limited because the training process runs on a single environment instead of multiple parallel environments.  
-- Updating every 512 steps takes ~~approximately 30-45 min (around 20 episodes)~~ around 8 episodes.
+- Updating every 512 steps takes ~~approximately 30-45 min (around 20 episodes)~~ around 3 episodes.

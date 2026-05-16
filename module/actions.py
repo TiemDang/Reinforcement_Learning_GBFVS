@@ -99,8 +99,8 @@ class GalleonActions:
             1.13, # meteorite_gauge
             1.53, # raging_strike
             2.37, # raging_strike_chain
-            7.77, # terrestrial_pulse_t
-            3.73, # terrestrial_pulse_p
+            8.87, # terrestrial_pulse_t + 1.1s
+            4.83, # terrestrial_pulse_p + 1.1s
             10.9, # swat
             0.3, # walk_forward
             0.3, # walk_backward
@@ -366,7 +366,7 @@ class GalleonActions:
         #self._reset_keys()
         for i in range(2):
             self.raging_strike()
-            time.sleep(0.2)
+            time.sleep(0.5)
 
 
     def terrestrial_pulse_t(self):
@@ -503,7 +503,7 @@ class GalleonActions:
 # def main():
 #     galleon = GalleonActions()
 #     time.sleep(3)  # Wait for 3 seconds before executing the action
-#     actions = [ galleon.low_block]
+#     actions = [galleon.raging_strike_chain]
 
 #     for action in actions:
 #         action()
